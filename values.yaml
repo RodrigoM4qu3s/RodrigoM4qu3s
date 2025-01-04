@@ -1,0 +1,62 @@
+replicaCount: 1
+
+# Configuração da imagem do WordPress
+wordpress:
+  image:
+    repository: wordpress
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 80
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 80
+  storage:
+    size: 10Gi
+
+# Configuração do banco de dados MySQL
+mysql:
+  image:
+    repository: mysql
+    tag: 5.7
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3306
+  database: wordpress
+  user: wordpress
+  password: your_password
+  rootPassword: root_password
+  storage:
+    size: 10Gi
+
+# Configuração do Ingress
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: wordpress.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: wordpress-cert
+      hosts:
+        - wordpress.local
+
+resources: {}
+autoscaling:
+  enabled: false
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+
